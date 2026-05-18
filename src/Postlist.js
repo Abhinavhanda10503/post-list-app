@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import PostComments from './Postcomments';
 
-const LIMIT = 5; // posts per page
+const LIMIT = 5; 
 
 function PostList({ localPosts }) {
     const [apiPosts, setApiPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const totalPages = 20; // JSONPlaceholder has 100 posts, 5 per page = 20 pages
+    const totalPages = 20; 
 
-    // re-runs every time currentPage changes
+    
     useEffect(() => {
         setLoading(true);
 
@@ -24,7 +24,7 @@ function PostList({ localPosts }) {
                 setError('Error fetching posts.');
                 setLoading(false);
             });
-    }, [currentPage]); // <-- currentPage here is the key, runs when page changes
+    }, [currentPage]); 
 
     if (error) return <p style={{ color: 'red' }}>{error}</p>;
 

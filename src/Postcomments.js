@@ -32,7 +32,6 @@ function PostComments({ postId }) {
                     display: 'flex', gap: '10px', marginBottom: '12px',
                 }}>
 
-                    {/* Bubble */}
                     <div style={{
                         background: 'rgb(201 201 201)',
                         borderRadius: '0 12px 12px 12px',
