@@ -1,112 +1,111 @@
 import { useState } from 'react';
+import { useAuth } from './context/AuthContext';
+import './PostForm.css';
 
 function PostForm({ onPostSaved }) {
-    const [title, setTitle] = useState('');
-    const [body, setBody] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState(null);
+  const { user } = useAuth();
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setSuccess(false);
-        setError(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!title.trim() || !body.trim()) return;
+    
+    setLoading(true);
+    setSuccess(false);
+    setError(null);
 
-        fetch('http://localhost:5000/local-posts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, body }),
-        })
-            .then(res => res.json())
-            .then(saved => {
-                setLoading(false);
-                setSuccess(true);
-                setTitle('');
-                setBody('');
-                onPostSaved(saved);
-            })
-            .catch(() => {
-                setLoading(false);
-                setError('Could not save post.');
-            });
-    };
+    try {
+      const response = await fetch('http://localhost:5000/local-posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          title, 
+          body,
+          author: user.name,
+          authorEmail: user.email,
+          authorAvatar: user.avatar
+        }),
+      });
+      const saved = await response.json();
+      
+      setLoading(false);
+      setSuccess(true);
+      setTitle('');
+      setBody('');
+      setIsExpanded(false);
+      onPostSaved(saved);
+      
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setLoading(false);
+      setError('Could not save post. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
 
-    return (
-        <div style={{
-            background: 'rgb(40 40 40)',
-            borderBottom: '1px solid #eff3f4',
-            padding: '16px 20px',
-            display: 'flex',
-            gap: '12px',
-            alignItems: 'flex-start',
-        }}>
-
-            {/* Input area */}
-            <div style={{ flex: 1 }}>
-                {success && (
-                    <p style={{ color: '#16a34a', fontSize: '13px', marginBottom: '8px' }}>
-                        ✓ Post saved!
-                    </p>
-                )}
-                {error && (
-                    <p style={{ color: '#dc2626', fontSize: '13px', marginBottom: '8px' }}>
-                        {error}
-                    </p>
-                )}
-
-                <input
-                    type="text"
-                    value={title}
-                    onChange={e => setTitle(e.target.value)}
-                    placeholder="Enter post title"
-                    required
-                    style={{
-                        width: '100%', border: 'none', outline: 'none',
-                        fontSize: '16px', fontWeight: '600',
-                        color: '#ffffff', background: 'transparent',
-                        marginBottom: '6px', fontFamily: 'inherit', borderBottom: '1px solid #eff3f4', paddingBottom: '10px',
-                    }}
-                />
-                <textarea
-                    value={body}
-                    onChange={e => setBody(e.target.value)}
-                    placeholder="What's on your mind?"
-                    required
-                    rows={3}
-                    style={{
-                        width: '100%', border: 'none', outline: 'none',
-                        resize: 'none', fontSize: '15px',
-                        color: '#ffffff', background: 'transparent',
-                        fontFamily: 'inherit', lineHeight: '1.5',
-                    }}
-                />
-
-                <div style={{
-                    display: 'flex', alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    paddingTop: '10px',
-                    borderTop: '1px solid #eff3f4',
-                    marginTop: '8px',
-                }}>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        style={{
-                            background: loading ? '#93c5fd' : '#1d4ed8',
-                            color: '#fff', border: 'none',
-                            borderRadius: '20px', padding: '8px 20px',
-                            fontSize: '14px', fontWeight: '600',
-                            cursor: loading ? 'not-allowed' : 'pointer',
-                            fontFamily: 'inherit',
-                        }}
-                    >
-                        {loading ? 'Posting...' : 'Post'}
-                    </button>
-                </div>
-            </div>
+  return (
+    <div className="post-form-container">
+      <div className="post-form-card">
+        <div className="form-header">
+          <img src={user.avatar} alt={user.name} className="user-avatar-form" />
+          <button 
+            className="create-post-btn"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? 'Cancel' : `What's on your mind, ${user.name}?`}
+          </button>
         </div>
-    );
+        
+        {isExpanded && (
+          <form onSubmit={handleSubmit}>
+            {success && (
+              <div className="alert success">
+                ✓ Post published successfully!
+              </div>
+            )}
+            {error && (
+              <div className="alert error">
+                {error}
+              </div>
+            )}
+            
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder="Post title..."
+              required
+              className="form-input"
+            />
+            
+            <textarea
+              value={body}
+              onChange={e => setBody(e.target.value)}
+              placeholder="What's on your mind?"
+              required
+              rows={4}
+              className="form-textarea"
+            />
+            
+            <div className="form-actions">
+              <button
+                type="submit"
+                disabled={loading || !title.trim() || !body.trim()}
+                className="submit-btn"
+              >
+                {loading ? 'Posting...' : 'Post'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default PostForm;

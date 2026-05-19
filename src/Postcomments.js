@@ -1,56 +1,100 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import "./PostComments.css";
 
-function PostComments({ postId }) {
-    const [comments, setComments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+function PostComments({ postId, initialComments, onCommentsUpdate }) {
+  const [comments, setComments] = useState(initialComments || []);
+  const [newComment, setNewComment] = useState("");
 
-    useEffect(() => {
-        fetch(`https://jsonplaceholder.typicode.com/posts/${postId}/comments`)
-            .then(response => response.json())
-            .then(data => {
-                setComments(data);
-                setLoading(false);
-            })
-            .catch(err => {
-                setError('Error fetching comments');
-                setLoading(false);
-            });
-    }, [postId]);
+  const handleAddComment = (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    
+    const comment = {
+      id: Date.now(),
+      name: "Current User",
+      email: "user@example.com",
+      body: newComment,
+      isNew: true 
+    };
+    
+    const updatedComments = [comment, ...comments];
+    setComments(updatedComments);
+    setNewComment("");
+    
+    if (onCommentsUpdate) {
+      onCommentsUpdate(updatedComments);
+    }
+  };
 
-    if (loading) return <p>Loading comments...</p>;
-    if (error) return <p>{error}</p>;
-    if (comments.length === 0) return <p>No comments found.</p>;
-
+  if (!comments || comments.length === 0) {
     return (
-        <div style={{
-            marginTop: '5px',
-            borderTop: '1px solid #eff3f4',
-        }}>
-            {comments.map(comment => (
-                <div key={comment.id} style={{
-                    display: 'flex', gap: '10px', marginBottom: '12px',
-                }}>
-
-                    <div style={{
-                        background: 'rgb(201 201 201)',
-                        borderRadius: '0 12px 12px 12px',
-                        padding: '8px 12px', flex: 1,
-                    }}>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f1419', paddingBottom: '7px' }}>
-                            {comment.name}
-                        </div>
-                        <div style={{ fontSize: '12px', color: '#536471', paddingBottom: '7px' }}>
-                            {comment.email}
-                        </div>
-                        <div style={{ fontSize: '13px', color: '#0f1419', lineHeight: '1.45'}}>
-                            {comment.body}
-                        </div>
-                    </div>
-                </div>
-            ))}
+      <div className="comments-section">
+        <div className="comments-header">
+          <h4>Comments (0)</h4>
         </div>
+        <form onSubmit={handleAddComment} className="comment-form">
+          <div className="comment-input-wrapper">
+            <div className="comment-avatar-small">👤</div>
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              className="comment-input"
+            />
+            <button type="submit" className="comment-submit">
+              Post
+            </button>
+          </div>
+        </form>
+        <p className="no-comments">No comments yet. Be the first to comment!</p>
+      </div>
     );
+  }
+
+  return (
+    <div className="comments-section">
+      <div className="comments-header">
+        <h4>Comments ({comments.length})</h4>
+      </div>
+
+      <form onSubmit={handleAddComment} className="comment-form">
+        <div className="comment-input-wrapper">
+          <div className="comment-avatar-small">👤</div>
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Write a comment..."
+            className="comment-input"
+          />
+          <button type="submit" className="comment-submit">
+            Post
+          </button>
+        </div>
+      </form>
+
+      <div className="comments-list">
+        {comments.map(comment => (
+          <div key={comment.id} className={`comment-item ${comment.isNew ? 'new-comment' : ''}`}>
+            <div className="comment-avatar">👤</div>
+            <div className="comment-content">
+              <div className="comment-author">
+                {comment.name}
+                <span className="comment-email">{comment.email}</span>
+                {comment.isNew && <span className="new-badge">New</span>}
+              </div>
+              <div className="comment-body">{comment.body}</div>
+              <div className="comment-actions-small">
+                <button className="comment-like-btn">Like</button>
+                <button className="comment-reply-btn">Reply</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default PostComments;

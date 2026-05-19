@@ -16,5 +16,35 @@
     "title": "Test title 2",
     "body": "Test body 2",
     "local": true
+  },
+  {
+    "id": 1779217078961,
+    "title": "Test title 1",
+    "body": "Test body 1",
+    "local": true
+  },
+  {
+    "id": 1779226165752,
+    "title": "test title",
+    "body": "test body",
+    "author": "abhinav",
+    "authorEmail": "abhi10503@gmail.com",
+    "authorAvatar": "https://i.pravatar.cc/150?img=69",
+    "local": true,
+    "createdAt": "2026-05-19T21:29:25.752Z",
+    "likes": 0,
+    "comments": []
+  },
+  {
+    "id": 1779229954016,
+    "title": "test",
+    "body": "test",
+    "author": "John Doe",
+    "authorEmail": "john@example.com",
+    "authorAvatar": "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
+    "local": true,
+    "createdAt": "2026-05-19T22:32:34.017Z",
+    "likes": 0,
+    "comments": []
   }
 ]
