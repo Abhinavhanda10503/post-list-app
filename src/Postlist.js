@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'
 import PostCard from './PostCard';
 import './PostList.css';
 
 const LIMIT = 5;
+
 
 function PostList({ localPosts, searchQuery }) {
   const [posts, setPosts] = useState([]);
@@ -10,25 +11,37 @@ function PostList({ localPosts, searchQuery }) {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = 20;
+  const goToPrev = useCallback(() => {
+
+    setCurrentPage(p => p - 1)
+  
+  }, [])
+  
+  
+  const goToNext = useCallback(() => {
+  
+    setCurrentPage(p => p + 1)
+  
+  }, [])
 
   useEffect(() => {
     setLoading(true);
+
     
-    // Fetch posts AND their comments in ONE batch
     fetch(`https://jsonplaceholder.typicode.com/posts?_page=${currentPage}&_limit=${LIMIT}`)
       .then(res => res.json())
       .then(postsData => {
-        // Fetch comments for all posts in parallel
+       
         const promises = postsData.map(post =>
           fetch(`https://jsonplaceholder.typicode.com/posts/${post.id}/comments`)
             .then(res => res.json())
             .then(comments => ({
               ...post,
-              commentsData: comments,  // Store full comments
+              commentsData: comments,  
               commentsCount: comments.length
             }))
         );
-        
+
         return Promise.all(promises);
       })
       .then(postsWithComments => {
@@ -51,9 +64,9 @@ function PostList({ localPosts, searchQuery }) {
 
   const filteredPosts = searchQuery
     ? allPosts.filter(post =>
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.body.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.body.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : allPosts;
 
   return (
@@ -79,38 +92,38 @@ function PostList({ localPosts, searchQuery }) {
         <>
           <div className="posts-feed">
             {filteredPosts.map(post => (
-              <PostCard 
-                key={post.id} 
+              <PostCard
+                key={post.id}
                 post={post}
                 searchQuery={searchQuery}
                 isLocal={localPosts.some(lp => lp.id === post.id)}
-                initialComments={post.commentsData}  // Pass full comments
-                initialCommentsCount={post.commentsCount}  // Pass count
+                initialComments={post.commentsData}  
+                initialCommentsCount={post.commentsCount}  
               />
             ))}
           </div>
-          
-          {!searchQuery && (
-            <div className="pagination">
-              <button
-                onClick={() => setCurrentPage(p => p - 1)}
-                disabled={currentPage === 1}
-                className="page-btn"
-              >
-                ← Previous
-              </button>
-              <span className="page-info">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(p => p + 1)}
-                disabled={currentPage === totalPages}
-                className="page-btn"
-              >
-                Next →
-              </button>
-            </div>
-          )}
+
+
+          <div className="pagination">
+            <button
+              onClick={goToPrev}
+              disabled={currentPage === 1}
+              className="page-btn"
+            >
+              ← Previous
+            </button>
+            <span className="page-info">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={goToNext}
+              disabled={currentPage === totalPages}
+              className="page-btn"
+            >
+              Next →
+            </button>
+          </div>
+
         </>
       )}
     </div>

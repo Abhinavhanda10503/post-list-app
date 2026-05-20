@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react'
 import { useAuth } from './context/AuthContext';
 import './PostForm.css';
 
@@ -14,7 +14,7 @@ function PostForm({ onPostSaved }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !body.trim()) return;
-    
+
     setLoading(true);
     setSuccess(false);
     setError(null);
@@ -23,8 +23,8 @@ function PostForm({ onPostSaved }) {
       const response = await fetch('http://localhost:5000/local-posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          title, 
+        body: JSON.stringify({
+          title,
           body,
           author: user.name,
           authorEmail: user.email,
@@ -32,14 +32,14 @@ function PostForm({ onPostSaved }) {
         }),
       });
       const saved = await response.json();
-      
+
       setLoading(false);
       setSuccess(true);
       setTitle('');
       setBody('');
       setIsExpanded(false);
       onPostSaved(saved);
-      
+
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setLoading(false);
@@ -53,14 +53,14 @@ function PostForm({ onPostSaved }) {
       <div className="post-form-card">
         <div className="form-header">
           <img src={user.avatar} alt={user.name} className="user-avatar-form" />
-          <button 
+          <button
             className="create-post-btn"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? 'Cancel' : `What's on your mind, ${user.name}?`}
           </button>
         </div>
-        
+
         {isExpanded && (
           <form onSubmit={handleSubmit}>
             {success && (
@@ -73,7 +73,7 @@ function PostForm({ onPostSaved }) {
                 {error}
               </div>
             )}
-            
+
             <input
               type="text"
               value={title}
@@ -82,7 +82,7 @@ function PostForm({ onPostSaved }) {
               required
               className="form-input"
             />
-            
+
             <textarea
               value={body}
               onChange={e => setBody(e.target.value)}
@@ -91,7 +91,7 @@ function PostForm({ onPostSaved }) {
               rows={4}
               className="form-textarea"
             />
-            
+
             <div className="form-actions">
               <button
                 type="submit"
@@ -108,4 +108,4 @@ function PostForm({ onPostSaved }) {
   );
 }
 
-export default PostForm;
+export default memo(PostForm)

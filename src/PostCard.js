@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react'
 import PostComments from './Postcomments';
 import './PostCard.css';
 
@@ -9,23 +9,19 @@ function PostCard({ post, searchQuery, isLocal, initialComments = [], initialCom
   const [comments, setComments] = useState(initialComments);
   const [commentsCount, setCommentsCount] = useState(initialCommentsCount);
 
-  const handleLike = () => {
-    if (liked) {
-      setLikesCount(likesCount - 1);
-    } else {
-      setLikesCount(likesCount + 1);
-    }
-    setLiked(!liked);
-  };
+  const handleLike = useCallback(() => {
+    setLikesCount(liked ? likesCount - 1 : likesCount + 1)
+    setLiked(!liked)
+  }, [liked, likesCount])
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
-  };
+  const toggleComments = useCallback(() => {
+    setShowComments(prev => !prev)
+  }, [])
 
-  const handleCommentsUpdate = (updatedComments) => {
-    setComments(updatedComments);
-    setCommentsCount(updatedComments.length);
-  };
+  const handleCommentsUpdate = useCallback((updated) => {
+    setComments(updated)
+    setCommentsCount(updated.length)
+  }, [])
 
   const highlightText = (text, query) => {
     if (!query) return text;
@@ -68,13 +64,13 @@ function PostCard({ post, searchQuery, isLocal, initialComments = [], initialCom
       </div>
 
       <div className="post-actions">
-        <button 
+        <button
           className={`action-btn ${liked ? 'liked' : ''}`}
           onClick={handleLike}
         >
           <span>❤️</span> Like
         </button>
-        <button 
+        <button
           className="action-btn"
           onClick={toggleComments}
         >
@@ -86,7 +82,7 @@ function PostCard({ post, searchQuery, isLocal, initialComments = [], initialCom
       </div>
 
       {showComments && (
-        <PostComments 
+        <PostComments
           postId={post.id}
           initialComments={comments}
           onCommentsUpdate={handleCommentsUpdate}
@@ -96,4 +92,4 @@ function PostCard({ post, searchQuery, isLocal, initialComments = [], initialCom
   );
 }
 
-export default PostCard;
+export default memo(PostCard)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from './context/AuthContext';
 import Postlist from './Postlist';
 import PostForm from './Postform';
@@ -8,20 +8,20 @@ import './App.css';
 
 function App() {
   const { isLoggedIn, user, logout, loading } = useAuth();
-  const [localPosts, setLocalPosts]   = useState([]);
+  const [localPosts, setLocalPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showLogin, setShowLogin]     = useState(true);
+  const [showLogin, setShowLogin] = useState(true);
 
   useEffect(() => {
     fetch('http://localhost:5000/local-posts')
       .then(res => res.json())
       .then(data => setLocalPosts(data))
       .catch(() => console.log('Could not load saved posts'));
-  }, []); 
+  }, []);
 
-  const handlePostSaved = (newPost) => {
-    setLocalPosts(prev => [newPost, ...prev]);
-  };
+  const handlePostSaved = useCallback((newPost) => {
+    setLocalPosts(prev => [newPost, ...prev])
+  }, [])
 
   if (loading) {
     return (
