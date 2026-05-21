@@ -1,0 +1,221 @@
+.post-card {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 20px 20px 12px;
+  transition: background 0.15s;
+  cursor: pointer;
+  animation: fadeSlideIn 0.3s ease both;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.post-card:hover {
+  background: rgba(255,255,255,0.018);
+}
+
+.post-card-inner {
+  display: flex;
+  gap: 12px;
+}
+
+/* avatar column */
+.post-avatar-col {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.post-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-subtle);
+}
+
+.avatar-thread-line {
+  width: 2px;
+  flex: 1;
+  background: var(--border-subtle);
+  margin: 4px 0;
+  min-height: 24px;
+  border-radius: 2px;
+}
+
+/* content column */
+.post-content-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.post-top-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.post-author {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+.local-badge {
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.verified-icon {
+  color: var(--accent-light);
+  font-size: 14px;
+}
+
+.post-meta {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.post-handle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.post-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.45;
+  margin-bottom: 6px;
+  font-family: var(--font-display);
+  letter-spacing: -0.2px;
+}
+
+.post-body {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.highlight {
+  background: rgba(124,106,247,0.25);
+  color: var(--accent-light);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+/* tag pills */
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.post-tag {
+  font-size: 13px;
+  color: var(--accent-light);
+  background: var(--accent-dim);
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+
+/* actions row */
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 2px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px 8px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  border-radius: 99px;
+  transition: all 0.15s;
+  margin-right: 12px;
+}
+
+.action-btn:hover { color: var(--text-primary); }
+
+.action-btn.liked { color: var(--pink); }
+
+.action-icon-wrap {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 16px;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.action-btn:hover .action-icon-wrap {
+  transform: scale(1.1);
+}
+
+.action-btn.liked .action-icon-wrap {
+  background: var(--pink-dim);
+}
+
+.action-btn:hover:not(.liked) .action-icon-wrap {
+  background: var(--bg-hover);
+}
+
+.action-count {
+  font-size: 13px;
+}
+
+.action-btn.comment-btn:hover { color: var(--accent-light); }
+.action-btn.comment-btn:hover .action-icon-wrap { background: var(--accent-dim); }
+
+.action-btn.share-btn:hover { color: var(--green); }
+.action-btn.share-btn:hover .action-icon-wrap { background: var(--green-dim); }
+
+.action-btn.bookmark-btn:hover { color: var(--amber); }
+.action-btn.bookmark-btn:hover .action-icon-wrap { background: var(--amber-dim); }
+
+.action-btn.bookmarked { color: var(--amber); }
+.action-btn.bookmarked .action-icon-wrap { background: var(--amber-dim); }
+
+/* stats mini row */
+.post-stats {
+  display: flex;
+  gap: 20px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.post-stats span strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}

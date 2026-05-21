@@ -103,7 +103,7 @@ app.post('/api/register', async (req, res) => {
     name: name,
     email: email,
     password: bcrypt.hashSync(password, 10), // Hash password
-    avatar: `./709699.png`,
+    avatar: `https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png`,
     joinDate: new Date().toISOString()
   };
   
