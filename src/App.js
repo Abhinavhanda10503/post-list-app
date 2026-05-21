@@ -1,86 +1,120 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from './context/AuthContext';
-import Postlist from './Postlist';
-import PostForm from './Postform';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
-import './App.css';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react'
+import { useAuth } from './context/AuthContext'
+import './App.css'
+
+const PostList     = lazy(() => import('./components/Postlist/Postlist'))
+const PostForm     = lazy(() => import('./components/Postform/Postform'))
+const LoginForm    = lazy(() => import('./Pages/Loginform/LoginForm'))
+const RegisterForm = lazy(() => import('./Pages/Registerform/RegisterForm'))
+
+function PageSpinner() {
+  return (
+    <div className="page-loader">
+      <div className="loader-ring" />
+      <span className="loader-text">Loading…</span>
+    </div>
+  );
+}
+
+const NAV_ITEMS = [
+  { icon: '🏠', label: 'Home',       id: 'home'      },
+];
 
 function App() {
-  const { isLoggedIn, user, logout, loading } = useAuth();
-  const [localPosts, setLocalPosts] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showLogin, setShowLogin] = useState(true);
+  const { isLoggedIn, user, logout, loading } = useAuth()
+  const [localPosts, setLocalPosts] = useState([])
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showLogin, setShowLogin] = useState(true)
+  const [activeNav, setActiveNav] = useState('home')
 
   useEffect(() => {
     fetch('http://localhost:5000/local-posts')
       .then(res => res.json())
       .then(data => setLocalPosts(data))
-      .catch(() => console.log('Could not load saved posts'));
-  }, []);
+      .catch(() => {})
+  }, [])
 
   const handlePostSaved = useCallback((newPost) => {
     setLocalPosts(prev => [newPost, ...prev])
   }, [])
 
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <div className="loading-spinner"></div>
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageSpinner />
 
   if (!isLoggedIn) {
     return (
-      <>
-        {showLogin ? (
-          <LoginForm onSwitchToRegister={() => setShowLogin(false)} />
-        ) : (
-          <RegisterForm onSwitchToLogin={() => setShowLogin(true)} />
-        )}
-      </>
-    );
+      <Suspense fallback={<PageSpinner />}>
+        {showLogin
+          ? <LoginForm    onSwitchToRegister={() => setShowLogin(false)} />
+          : <RegisterForm onSwitchToLogin={() => setShowLogin(true)} />
+        }
+      </Suspense>
+    )
   }
 
   return (
     <div className="app">
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="logo">
-            <span className="logo-text">SocialPost</span>
-          </div>
 
-          <div className="search-bar">
-            <span className="search-icon">🔍</span>
+      {/* Left sidebar */}
+      <aside className="sidebar">
+        <a href="/" className="sidebar-logo" onClick={e => e.preventDefault()}>
+          <div className="sidebar-logo-icon">✍️</div>
+          <span className="sidebar-logo-text">Social<span>Post</span></span>
+        </a>
+
+        {NAV_ITEMS.map(item => (
+          <button
+            key={item.id}
+            className={`nav-item ${activeNav === item.id ? 'active' : ''}`}
+            onClick={() => setActiveNav(item.id)}
+          >
+            <span className="nav-item-icon">{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+
+        <div className="nav-divider" />
+
+        <div className="sidebar-user">
+          <img src={user.avatar} alt={user.name} className="sidebar-avatar" />
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">{user.name}</div>
+            <div className="sidebar-user-handle">@{user.email?.split('@')[0]}</div>
+          </div>
+          <button className="sidebar-logout" onClick={logout} title="Sign out">
+            ↩
+          </button>
+        </div>
+      </aside>
+
+      {/* Main feed */}
+      <main className="main-feed">
+        <header className="feed-header">
+          <span className="feed-title">Home</span>
+          <div className="search-wrap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search posts..."
-              className="search-input"
+              placeholder="Search posts…"
             />
           </div>
+        </header>
 
-          <div className="user-menu">
-            <div className="user-info">
-              <img src={user.avatar} alt={user.name} className="user-avatar" />
-              <span className="user-name">{user.name}</span>
-            </div>
-            <button onClick={logout} className="logout-btn">Logout</button>
+        <Suspense fallback={
+          <div className="page-loader" style={{ height: 200 }}>
+            <div className="loader-ring" />
           </div>
-        </div>
-      </nav>
-
-      <main className="main-content">
-        <div className="content-wrapper">
+        }>
           <PostForm onPostSaved={handlePostSaved} />
-          <Postlist localPosts={localPosts} searchQuery={searchQuery} />
-        </div>
+          <PostList localPosts={localPosts} searchQuery={searchQuery} />
+        </Suspense>
       </main>
+
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
