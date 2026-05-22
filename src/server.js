@@ -1,30 +1,30 @@
-// server.js
+// server.js - COMPLETE UPDATED VERSION
 const express = require('express');
 const cors    = require('cors');
 const fs      = require('fs');
 const path    = require('path');
-const bcrypt  = require('bcryptjs'); // For password hashing
+const bcrypt  = require('bcryptjs');
 
-const app      = express();
+const app = express();
 const POSTS_FILE = path.join(__dirname, 'posts.json');
 const USERS_FILE = path.join(__dirname, 'users.json');
+const LIKES_FILE = path.join(__dirname, 'likes.json');  // NEW: Track who liked what
 
 app.use(cors());
 app.use(express.json());
 
-// Initialize JSON files if they don't exist
+// Initialize JSON files
 if (!fs.existsSync(POSTS_FILE)) {
   fs.writeFileSync(POSTS_FILE, JSON.stringify([], null, 2));
 }
 
 if (!fs.existsSync(USERS_FILE)) {
-  // Create default users
   const defaultUsers = [
     {
       id: 1,
       name: 'Demo User',
       email: 'demo@example.com',
-      password: bcrypt.hashSync('demo123', 10), // Hashed password
+      password: bcrypt.hashSync('demo123', 10),
       avatar: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png',
       joinDate: new Date().toISOString()
     },
@@ -48,35 +48,43 @@ if (!fs.existsSync(USERS_FILE)) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(defaultUsers, null, 2));
 }
 
-// Helper function to read users
+// Initialize likes tracking file
+if (!fs.existsSync(LIKES_FILE)) {
+  fs.writeFileSync(LIKES_FILE, JSON.stringify({}, null, 2));
+}
+
+// Helper functions
 const getUsers = () => {
   const data = fs.readFileSync(USERS_FILE, 'utf-8');
   return JSON.parse(data);
 };
 
-// Helper function to save users
 const saveUsers = (users) => {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
 };
 
-// Helper function to read posts
 const getPosts = () => {
   const data = fs.readFileSync(POSTS_FILE, 'utf-8');
   return JSON.parse(data);
 };
 
-// Helper function to save posts
 const savePosts = (posts) => {
   fs.writeFileSync(POSTS_FILE, JSON.stringify(posts, null, 2));
 };
 
-// ============ AUTHENTICATION ROUTES ============
+const getLikes = () => {
+  const data = fs.readFileSync(LIKES_FILE, 'utf-8');
+  return JSON.parse(data);
+};
 
-// Register new user
+const saveLikes = (likes) => {
+  fs.writeFileSync(LIKES_FILE, JSON.stringify(likes, null, 2));
+};
+
+// ============ AUTHENTICATION ROUTES ============
 app.post('/api/register', async (req, res) => {
   const { name, email, password } = req.body;
   
-  // Validation
   if (!name || name.length < 2) {
     return res.status(400).json({ error: 'Name must be at least 2 characters long' });
   }
@@ -90,19 +98,16 @@ app.post('/api/register', async (req, res) => {
   }
   
   const users = getUsers();
-  
-  // Check if user already exists
   const existingUser = users.find(u => u.email === email);
   if (existingUser) {
     return res.status(400).json({ error: 'An account with this email already exists' });
   }
   
-  // Create new user
   const newUser = {
     id: users.length + 1,
     name: name,
     email: email,
-    password: bcrypt.hashSync(password, 10), // Hash password
+    password: bcrypt.hashSync(password, 10),
     avatar: `https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png`,
     joinDate: new Date().toISOString()
   };
@@ -110,12 +115,10 @@ app.post('/api/register', async (req, res) => {
   users.push(newUser);
   saveUsers(users);
   
-  // Return user without password
   const { password: _, ...userWithoutPassword } = newUser;
   res.status(201).json(userWithoutPassword);
 });
 
-// Login user
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
@@ -130,43 +133,30 @@ app.post('/api/login', async (req, res) => {
     return res.status(401).json({ error: 'No account found with this email' });
   }
   
-  // Check password
   const isValidPassword = bcrypt.compareSync(password, user.password);
   if (!isValidPassword) {
     return res.status(401).json({ error: 'Incorrect password' });
   }
   
-  // Return user without password
   const { password: _, ...userWithoutPassword } = user;
-  res.json(userWithoutPassword);
-});
-
-// Get all users (for admin, optional)
-app.get('/api/users', (req, res) => {
-  const users = getUsers();
-  const usersWithoutPassword = users.map(({ password, ...user }) => user);
-  res.json(usersWithoutPassword);
-});
-
-// Get single user
-app.get('/api/users/:id', (req, res) => {
-  const users = getUsers();
-  const user = users.find(u => u.id === parseInt(req.params.id));
-  
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
-  
-  const { password, ...userWithoutPassword } = user;
   res.json(userWithoutPassword);
 });
 
 // ============ POST ROUTES ============
 
-// Get all posts
+// Get all posts with like info for current user
 app.get('/local-posts', (req, res) => {
   const posts = getPosts();
-  res.json(posts);
+  const userId = req.headers['user-id']; // Get user ID from headers
+  const likes = getLikes();
+  
+  // Add like info to each post
+  const postsWithLikeInfo = posts.map(post => ({
+    ...post,
+    isLikedByCurrentUser: userId ? (likes[post.id]?.includes(parseInt(userId)) || false) : false
+  }));
+  
+  res.json(postsWithLikeInfo);
 });
 
 // Create new post
@@ -179,40 +169,69 @@ app.post('/local-posts', (req, res) => {
     author: req.body.author,
     authorEmail: req.body.authorEmail,
     authorAvatar: req.body.authorAvatar,
+    authorId: req.body.authorId, // NEW: Store author ID
     local: true,
     createdAt: new Date().toISOString(),
     likes: 0,
-    comments: []
+    comments: [], // Will store comments with replies now
   };
   posts.push(newPost);
   savePosts(posts);
   res.json(newPost);
 });
 
-// Delete post
-app.delete('/local-posts/:id', (req, res) => {
-  let posts = getPosts();
-  const postId = parseInt(req.params.id);
-  posts = posts.filter(post => post.id !== postId);
-  savePosts(posts);
-  res.json({ message: 'Post deleted successfully' });
-});
-
-// Like/Unlike post
+// Like/Unlike post with user tracking
 app.patch('/local-posts/:id/like', (req, res) => {
   const posts = getPosts();
-  const postIndex = posts.findIndex(p => p.id === parseInt(req.params.id));
+  const likes = getLikes();
+  const postId = parseInt(req.params.id);
+  const userId = req.body.userId; // Get user ID from request
   
+  const postIndex = posts.findIndex(p => p.id === postId);
   if (postIndex === -1) {
     return res.status(404).json({ error: 'Post not found' });
   }
   
-  posts[postIndex].likes = (posts[postIndex].likes || 0) + 1;
+  // Initialize likes tracking for this post if not exists
+  if (!likes[postId]) {
+    likes[postId] = [];
+  }
+  
+  const userLikedIndex = likes[postId].indexOf(userId);
+  let isLiked = false;
+  
+  if (userLikedIndex === -1) {
+    // User likes the post
+    likes[postId].push(userId);
+    posts[postIndex].likes = (posts[postIndex].likes || 0) + 1;
+    isLiked = true;
+  } else {
+    // User unlikes the post
+    likes[postId].splice(userLikedIndex, 1);
+    posts[postIndex].likes = (posts[postIndex].likes || 0) - 1;
+    isLiked = false;
+  }
+  
   savePosts(posts);
-  res.json({ likes: posts[postIndex].likes });
+  saveLikes(likes);
+  
+  res.json({ 
+    likes: posts[postIndex].likes, 
+    isLiked: isLiked 
+  });
 });
 
-// Add comment to post
+// Get like status for a post
+app.get('/local-posts/:id/like-status', (req, res) => {
+  const likes = getLikes();
+  const postId = parseInt(req.params.id);
+  const userId = parseInt(req.headers['user-id']);
+  
+  const isLiked = likes[postId]?.includes(userId) || false;
+  res.json({ isLiked });
+});
+
+// Add comment to post (with reply support)
 app.post('/local-posts/:id/comments', (req, res) => {
   const posts = getPosts();
   const postIndex = posts.findIndex(p => p.id === parseInt(req.params.id));
@@ -225,8 +244,12 @@ app.post('/local-posts/:id/comments', (req, res) => {
     id: Date.now(),
     name: req.body.name,
     email: req.body.email,
+    userId: req.body.userId,
     body: req.body.body,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    likes: 0,
+    likedBy: [], // Track who liked this comment
+    replies: []  // NEW: Store replies to comments
   };
   
   if (!posts[postIndex].comments) {
@@ -236,6 +259,80 @@ app.post('/local-posts/:id/comments', (req, res) => {
   posts[postIndex].comments.push(newComment);
   savePosts(posts);
   res.json(newComment);
+});
+
+// Like a comment
+app.post('/local-posts/:postId/comments/:commentId/like', (req, res) => {
+  const posts = getPosts();
+  const postId = parseInt(req.params.postId);
+  const commentId = parseInt(req.params.commentId);
+  const userId = req.body.userId;
+  
+  const post = posts.find(p => p.id === postId);
+  if (!post) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+  
+  const comment = post.comments.find(c => c.id === commentId);
+  if (!comment) {
+    return res.status(404).json({ error: 'Comment not found' });
+  }
+  
+  if (!comment.likedBy) {
+    comment.likedBy = [];
+  }
+  
+  const userLikedIndex = comment.likedBy.indexOf(userId);
+  let isLiked = false;
+  
+  if (userLikedIndex === -1) {
+    comment.likedBy.push(userId);
+    comment.likes = (comment.likes || 0) + 1;
+    isLiked = true;
+  } else {
+    comment.likedBy.splice(userLikedIndex, 1);
+    comment.likes = (comment.likes || 0) - 1;
+    isLiked = false;
+  }
+  
+  savePosts(posts);
+  res.json({ likes: comment.likes, isLiked });
+});
+
+// Add reply to a comment
+app.post('/local-posts/:postId/comments/:commentId/replies', (req, res) => {
+  const posts = getPosts();
+  const postId = parseInt(req.params.postId);
+  const commentId = parseInt(req.params.commentId);
+  
+  const post = posts.find(p => p.id === postId);
+  if (!post) {
+    return res.status(404).json({ error: 'Post not found' });
+  }
+  
+  const comment = post.comments.find(c => c.id === commentId);
+  if (!comment) {
+    return res.status(404).json({ error: 'Comment not found' });
+  }
+  
+  const newReply = {
+    id: Date.now(),
+    name: req.body.name,
+    email: req.body.email,
+    userId: req.body.userId,
+    body: req.body.body,
+    createdAt: new Date().toISOString(),
+    likes: 0,
+    likedBy: []
+  };
+  
+  if (!comment.replies) {
+    comment.replies = [];
+  }
+  
+  comment.replies.push(newReply);
+  savePosts(posts);
+  res.json(newReply);
 });
 
 // Get comments for a post
@@ -252,13 +349,4 @@ app.get('/local-posts/:id/comments', (req, res) => {
 
 app.listen(5000, () => {
   console.log('🚀 Server running on http://localhost:5000');
-  console.log('📝 API endpoints:');
-  console.log('   POST   /api/register     - Register new user');
-  console.log('   POST   /api/login        - Login user');
-  console.log('   GET    /api/users        - Get all users');
-  console.log('   GET    /local-posts      - Get all posts');
-  console.log('   POST   /local-posts      - Create new post');
-  console.log('   DELETE /local-posts/:id  - Delete post');
-  console.log('   PATCH  /local-posts/:id/like - Like post');
-  console.log('   POST   /local-posts/:id/comments - Add comment');
 });
