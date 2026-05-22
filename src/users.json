@@ -22,5 +22,29 @@
     "password": "$2b$10$QZnNPOeBf7i5kd9L8DpkIu4u3NIQ4odwXU/YBT74Bh/hMqCVXCxRC",
     "avatar": "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
     "joinDate": "2026-05-21T21:32:41.092Z"
+  },
+  {
+    "id": 4,
+    "name": "abhi",
+    "email": "abhitest12@gmail.com",
+    "password": "$2b$10$elg8miHkNxLDJkxB0ukvO.ttq6r/Jls5EY.5GDOZaSqn0gbbhPBS6",
+    "avatar": "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
+    "joinDate": "2026-05-21T22:38:42.544Z"
+  },
+  {
+    "id": 5,
+    "name": "abhi",
+    "email": "abhitest1@gmail.com",
+    "password": "$2b$10$1x4fzZvP7nwyZGjsNjAmmO9cOVWqxRDoTEf7CM8.ynxyN8fhSw5gu",
+    "avatar": "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
+    "joinDate": "2026-05-21T22:40:56.091Z"
+  },
+  {
+    "id": 6,
+    "name": "abhi",
+    "email": "abhitest3@gmail.com",
+    "password": "$2b$10$IR2UMWZUejLBXS7ZKpR/ge6Fw8KeHYVjlBagHiK08JZRSLZgWWpbS",
+    "avatar": "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
+    "joinDate": "2026-05-21T22:45:08.542Z"
   }
 ]

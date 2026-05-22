@@ -1,1 +1,85 @@
-[]
+[
+  {
+    "id": 1779403204040,
+    "title": "Test title",
+    "body": "Test body",
+    "author": "Jane Smith",
+    "authorEmail": "jane@example.com",
+    "authorAvatar": "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
+    "local": true,
+    "createdAt": "2026-05-21T22:40:04.040Z",
+    "likes": 2,
+    "comments": [
+      {
+        "id": 1779487370972,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "userId": 2,
+        "body": "hlo",
+        "createdAt": "2026-05-22T22:02:50.972Z",
+        "likes": 1,
+        "likedBy": [
+          2
+        ],
+        "replies": []
+      },
+      {
+        "id": 1779487517941,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "userId": 2,
+        "body": "hlo",
+        "createdAt": "2026-05-22T22:05:17.941Z",
+        "likes": 0,
+        "likedBy": [],
+        "replies": []
+      }
+    ]
+  },
+  {
+    "id": 1779403478944,
+    "title": "Test Title 2",
+    "body": "Test body 2",
+    "author": "Jane Smith",
+    "authorEmail": "jane@example.com",
+    "authorAvatar": "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
+    "local": true,
+    "createdAt": "2026-05-21T22:44:38.944Z",
+    "likes": 2,
+    "comments": [
+      {
+        "id": 1779481017451,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "userId": 2,
+        "body": "gg",
+        "createdAt": "2026-05-22T20:16:57.451Z",
+        "likes": 0,
+        "likedBy": [],
+        "replies": [
+          {
+            "id": 1779481035197,
+            "name": "John Doe",
+            "email": "john@example.com",
+            "userId": 2,
+            "body": "ff",
+            "createdAt": "2026-05-22T20:17:15.197Z",
+            "likes": 0,
+            "likedBy": []
+          }
+        ]
+      },
+      {
+        "id": 1779487396818,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "userId": 3,
+        "body": "gg",
+        "createdAt": "2026-05-22T22:03:16.818Z",
+        "likes": 0,
+        "likedBy": [],
+        "replies": []
+      }
+    ]
+  }
+]
