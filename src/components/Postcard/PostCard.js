@@ -37,7 +37,7 @@ function PostCard({ post, searchQuery, isLocal, initialComments = [], initialCom
     if (!user) return false
     return getApiPostLikeStatus(post.id, user.id)
   }
-  
+
   const getInitialLikesCount = () => {
     if (isLocal) return post.likes || 0
     return getApiPostLikesCount(post.id, post.likes || 0)
@@ -50,14 +50,14 @@ function PostCard({ post, searchQuery, isLocal, initialComments = [], initialCom
 
   const [comments, setComments] = useState(() =>
     initialComments?.length ? initialComments
-    : post.commentsData?.length ? post.commentsData
-    : post.comments?.length ? post.comments
-    : []
+      : post.commentsData?.length ? post.commentsData
+        : post.comments?.length ? post.comments
+          : []
   )
   const [commentsCount, setCommentsCount] = useState(() =>
     initialCommentsCount > 0 ? initialCommentsCount
-    : post.commentsCount ? post.commentsCount
-    : post.commentsData?.length ?? post.comments?.length ?? 0
+      : post.commentsCount ? post.commentsCount
+        : post.commentsData?.length ?? post.comments?.length ?? 0
   )
 
   const handleLike = useCallback(async () => {
@@ -144,7 +144,7 @@ function PostCard({ post, searchQuery, isLocal, initialComments = [], initialCom
         </div>
       </div>
       {showComments && (
-        <PostComments postId={post.id} post={post} initialComments={comments} onCommentsUpdate={handleCommentsUpdate} />
+        <PostComments postId={post.id} post={post} initialComments={comments} onCommentsUpdate={handleCommentsUpdate} isApiPost={!isLocal} />
       )}
     </article>
   )
