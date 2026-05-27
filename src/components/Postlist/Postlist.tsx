@@ -5,6 +5,42 @@ import './PostList.css';
 
 const LIMIT = 8;
 
+// GraphQL query result types
+interface GraphQLPost {
+  id: number;
+  title: string;
+  body: string;
+  userId: number;
+  commentsCount: number;
+}
+
+interface PostsData {
+  posts: {
+    posts: GraphQLPost[];
+    totalCount: number;
+  };
+}
+
+interface PostsVars {
+  page: number;
+  limit: number;
+}
+
+// Enriched post type (used in component state)
+interface EnrichedPost extends GraphQLPost {
+  commentsData: any[]; // This will be populated by PostCard or left empty
+  commentsCount: number;
+  isLikedByCurrentUser: boolean;
+  likes: number;
+  local: boolean;
+}
+
+// Component props
+interface PostListProps {
+  localPosts: any[]; // Local posts from your backend – keep as any[] to match existing usage
+  searchQuery: string;
+}
+
 const GET_POSTS = gql`
   query GetPosts($page: Int!, $limit: Int!) {
     posts(page: $page, limit: $limit) {
@@ -20,25 +56,25 @@ const GET_POSTS = gql`
   }
 `;
 
-const getApiPostLikesCount = (postId, defaultCount = 0) => {
+const getApiPostLikesCount = (postId: number, defaultCount: number = 0): number => {
   const key = `api_post_likes_count_${postId}`;
   const saved = localStorage.getItem(key);
-  return saved ? parseInt(saved) : defaultCount;
+  return saved ? parseInt(saved, 10) : defaultCount;
 };
 
-function PostList({ localPosts, searchQuery }) {
+function PostList({ localPosts, searchQuery }: PostListProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const { loading, error, data } = useQuery(GET_POSTS, {
+  const { loading, error, data } = useQuery<PostsData, PostsVars>(GET_POSTS, {
     variables: { page: currentPage, limit: LIMIT },
     fetchPolicy: 'network-only',
   });
 
-  const [apiPosts, setApiPosts] = useState([]);
+  const [apiPosts, setApiPosts] = useState([] as EnrichedPost[]);
   const totalPages = data ? Math.ceil(data.posts.totalCount / LIMIT) : 1;
 
   useEffect(() => {
     if (data?.posts?.posts) {
-      const enriched = data.posts.posts.map(post => ({
+      const enriched: EnrichedPost[] = data.posts.posts.map(post => ({
         ...post,
         commentsData: [],
         commentsCount: post.commentsCount,
@@ -75,7 +111,7 @@ function PostList({ localPosts, searchQuery }) {
     }
   }, [currentPage, totalPages, searchQuery]);
 
-  const handleLikeUpdate = (postId, likes, isLiked) => {
+  const handleLikeUpdate = (postId: number, likes: number, isLiked: boolean) => {
     setApiPosts(prev =>
       prev.map(p => (p.id === postId ? { ...p, likes, isLikedByCurrentUser: isLiked } : p))
     );
@@ -113,7 +149,6 @@ function PostList({ localPosts, searchQuery }) {
               initialComments={post.commentsData || []}
               initialCommentsCount={post.commentsCount || 0}
               onLikeUpdate={handleLikeUpdate}
-              style={{ animationDelay: `${i * 40}ms` }}
             />
           ))}
           {!searchQuery && totalPages > 1 && (
